@@ -1,12 +1,34 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Card, Image, Button } from 'semantic-ui-react';
 import ActivityStore from '../../../app/stores/activityStore';
 import { observer } from 'mobx-react-lite';
+import { RouteComponentProps } from 'react-router';
+import { LoadingComponent } from '../../../app/layout/LoadingComponent';
+import { Link } from 'react-router-dom';
 
+interface DetailParams {
+  id: string
+}
 
-const ActivityDetails: React.FC = () => {
+const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({
+  match,
+  history
+}) => {
   const activityStore = useContext(ActivityStore);
-  const {selectedActivity: activity, openEditForm, cancelSelectedActivity} = activityStore;
+  const {
+    activity, 
+    loadActivity, 
+    loadingInitial
+  } = activityStore;
+
+  // we need [loadActivity] to be put there because otherwise this 
+  //will load continuosly. With this put, loadActivity will run only once 
+  useEffect(() => {
+    loadActivity(match.params.id)
+  }, [loadActivity, match.params.id]);
+
+  if (loadingInitial || !activity) return <LoadingComponent content='Loading activity...' />
+
     return (
         <Card fluid>
       <Image src={`/assets/categoryImages/${activity!.category}.jpg`}
@@ -23,18 +45,22 @@ const ActivityDetails: React.FC = () => {
         </Card.Content>
         <Card.Content extra>
             <Button.Group widths={2}>
-                <Button onClick={() => openEditForm(activity!.id)} 
+                <Button 
+                  as={Link} to={`/manage/${activity.id}`}
                   basic
-                   color='blue'
-                   content='Edit' />
-                <Button onClick={cancelSelectedActivity} 
+                  color='blue'
+                  content='Edit'
+                />
+                <Button
+                  onClick={() => history.push('/activities')} 
                   basic 
                   color='grey' 
-                  content='Cancel' />
+                  content='Cancel' 
+                />s
             </Button.Group>
         </Card.Content>
       </Card>
-    )
+    );
 };
 
 export default observer(ActivityDetails);
