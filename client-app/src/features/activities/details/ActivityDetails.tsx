@@ -4,7 +4,7 @@ import ActivityStore from '../../../app/stores/activityStore';
 import { observer } from 'mobx-react-lite';
 import { RouteComponentProps } from 'react-router';
 import { LoadingComponent } from '../../../app/layout/LoadingComponent';
-import ActivityDetailedHeader  from './ActivityDetailedHeader';
+import ActivityDetailedHeader from './ActivityDetailedHeader';
 import { ActivityDetailedInfo } from './ActivityDetailedInfo';
 import { ActivityDetailedChat } from './ActivityDetailedChat';
 import { ActivityDetailedSidebar } from './ActivityDetailedSidebar';
@@ -14,7 +14,8 @@ interface DetailParams {
 }
 
 const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({
-  match
+  match,
+  history
 }) => {
   const activityStore = useContext(ActivityStore);
   const { activity, loadActivity, loadingInitial } = activityStore;
@@ -23,10 +24,13 @@ const ActivityDetails: React.FC<RouteComponentProps<DetailParams>> = ({
   //will load continuosly. With this put, loadActivity will run only once
   useEffect(() => {
     loadActivity(match.params.id);
-  }, [loadActivity, match.params.id]);
+  }, [loadActivity, match.params.id, history]);
 
-  if (loadingInitial || !activity)
+  if (loadingInitial)
     return <LoadingComponent content="Loading activity..." />;
+
+  if (!activity) 
+  return <h2>Activity not found</h2>
 
   return (
     <Grid>
