@@ -1,8 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Segment, Form, Button, Grid } from 'semantic-ui-react';
-import {
-  ActivityFormValues,
-} from '../../../app/models/activity';
+import { ActivityFormValues } from '../../../app/models/activity';
 import { v4 as uuid } from 'uuid';
 import ActivityStore from '../../../app/stores/activityStore';
 import { observer } from 'mobx-react-lite';
@@ -14,19 +12,26 @@ import { SelectInput } from '../../../app/common/form/SelectInput';
 import { category } from '../../../app/common/options/categoryOptions';
 import { DateInput } from '../../../app/common/form/DateInput';
 import { combineDateAndTime } from '../../../app/common/form/util';
-import {combineValidators, isRequired, composeValidators, hasLengthGreaterThan} from 'revalidate';
+import {
+  combineValidators,
+  isRequired,
+  composeValidators,
+  hasLengthGreaterThan,
+} from 'revalidate';
 
 const validate = combineValidators({
-  title: isRequired({message: 'The event title is required'}),
+  title: isRequired({ message: 'The event title is required' }),
   category: isRequired('Category'),
   description: composeValidators(
     isRequired('Description'),
-    hasLengthGreaterThan(4)({message: 'Description need to be at least 5 characters'})
+    hasLengthGreaterThan(4)({
+      message: 'Description need to be at least 5 characters',
+    })
   )(),
   city: isRequired('City'),
   venue: isRequired('Venue'),
   date: isRequired('Date'),
-  time: isRequired('Time')
+  time: isRequired('Time'),
 });
 
 interface DetailParam {
@@ -65,7 +70,8 @@ const ActivityForm: React.FC<RouteComponentProps<DetailParam>> = ({
     const dateAndTime = combineDateAndTime(values.date, values.time);
     const { date, time, ...activity } = values;
     activity.date = dateAndTime;
-    if (!activity.id) { // check if we have an activityId
+    if (!activity.id) {
+      // check if we have an activityId
       let newActivity = {
         ...activity,
         id: uuid(),
@@ -81,7 +87,7 @@ const ActivityForm: React.FC<RouteComponentProps<DetailParam>> = ({
       <Grid.Column width={10}>
         <Segment clearing>
           <FinalForm
-          validate={validate}
+            validate={validate}
             initialValues={activity}
             onSubmit={handleFinalFormSubmit}
             render={({ handleSubmit, invalid, pristine }) => (
@@ -137,7 +143,7 @@ const ActivityForm: React.FC<RouteComponentProps<DetailParam>> = ({
                 />
                 <Button
                   loading={submitting}
-                  disabled={loading || invalid || pristine} //disable button when page is loading or 
+                  disabled={loading || invalid || pristine} //disable button when page is loading or
                   //when the mandatory fields are left empty
                   floated="right"
                   positive
@@ -147,9 +153,9 @@ const ActivityForm: React.FC<RouteComponentProps<DetailParam>> = ({
                 <Button
                   onClick={
                     activity.id //check if activity has an id
-                     ? () => history.push(`/activities/${activity.id}`) //case yes
-                     : () => history.push('/activities') //case no
-                    }
+                      ? () => history.push(`/activities/${activity.id}`) //case yes
+                      : () => history.push('/activities') //case no
+                  }
                   disabled={loading} //disable button when page is loading
                   floated="right"
                   positive

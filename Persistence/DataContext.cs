@@ -1,9 +1,10 @@
 using Domain;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Persistence
 {
-    public class DataContext: DbContext
+    public class DataContext: IdentityDbContext<AppUser>
     {
         public DataContext(DbContextOptions options) :base(options)
         {            
@@ -15,6 +16,9 @@ namespace Persistence
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            //this allows us when creating a migration to give our appUser a primary key as a string 
+            base.OnModelCreating(builder);
+            
             builder.Entity<Value>()
                 .HasData(
                     new Value {Id = 1, Name = "Value 101"},
