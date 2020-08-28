@@ -1,10 +1,12 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Domain;
 using MediatR;
 using Persistence;
 using FluentValidation;
+using Application.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using Domain;
 
 namespace Application.Activities
 {
@@ -37,30 +39,47 @@ namespace Application.Activities
         public class Handler : IRequestHandler<Command>
         {
             private readonly DataContext _context;
-            public Handler(DataContext context)
+            private readonly IUserAccessor _userAccessor;
+            public Handler(DataContext context, IUserAccessor userAccessor)
             {
+                _userAccessor = userAccessor;
                 _context = context;
             }
 
             public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
             {
-               var activity = new Activity 
-               {
-                   Id = request.Id,
-                   Title = request.Title,
-                   Description = request.Description,
-                   Category = request.Category,
-                   Date = request.Date,
-                   City = request.City,
-                   Venue = request.Venue
-               };
+                var activity = new Activity
+                {
+                    Id = request.Id,
+                    Title = request.Title,
+                    Description = request.Description,
+                    Category = request.Category,
+                    Date = request.Date,
+                    City = request.City,
+                    Venue = request.Venue
+                };
 
-               _context.Activities.Add(activity);
-               var success = await _context.SaveChangesAsync() > 0;
+                _context.Activities.Add(activity);
 
-               if (success) return Unit.Value;
+                //this gives us a user object to work with for the current logged user
+                var user = await _context.Users.SingleOrDefaultAsync(x => 
+                x.UserName == _userAccessor.GetCurrentUsername());
 
-               throw new Exception("Problem saving changes");
+                var attendee = new UserActivity
+                {
+                    AppUser= user,
+                    Activity = activity,
+                    IsHost = true,
+                    DateJoined = DateTime.Now
+                };
+
+                _context.UserActivities.Add(attendee);
+
+                var success = await _context.SaveChangesAsync() > 0;
+
+                if (success) return Unit.Value;
+
+                throw new Exception("Problem saving changes");
             }
         }
     }
