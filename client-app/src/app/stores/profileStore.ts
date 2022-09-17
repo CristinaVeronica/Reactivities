@@ -104,4 +104,22 @@ export default class ProfileStore {
       });
     }
   };
+
+  @action updateProfile = async (profile: Partial<IProfile>) => {
+    try {
+      await agent.Profiles.updateProfile(profile);
+      runInAction(() => {
+        if (
+          profile.displayName !== this.rootstore.userStore.user!.displayName
+        ) {
+          this.rootstore.userStore.user!.displayName = profile.displayName!;
+        }
+        //updating the profile. ...this.profile! takes the existing profile 
+        // and ... profile overrides the new properties
+        this.profile = { ...this.profile!, ...profile };
+      });
+    } catch (error) {
+      toast.error('Problem updating profile');
+    }
+  };
 }
